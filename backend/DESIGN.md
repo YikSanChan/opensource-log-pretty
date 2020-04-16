@@ -1,6 +1,0 @@
-activity_events
-- source: "github" | "stackoverflow" | ...
-- event type: "asked question" | "accepted answer" | ...
-- event url: URL
-- created_at: timestamp
-- title?
