@@ -1,0 +1,8 @@
+### https://developer.github.com/v3/activity/events
+GET https://api.github.com/users/yiksanchan/events/public
+
+### https://api.stackexchange.com/docs/types/user-timeline
+GET https://api.stackexchange.com/2.2/users/7550592/timeline?site=stackoverflow
+
+### get tags
+GET https://api.stackexchange.com/2.2/questions/60944305?order=desc&sort=activity&site=stackoverflow
