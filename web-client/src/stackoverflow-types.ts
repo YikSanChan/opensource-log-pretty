@@ -1,5 +1,7 @@
 // Comes from Stackexchange API
 // https://api.stackexchange.com/docs/types/user-timeline
+import { ActivityEvent } from "./types";
+
 export interface StackoverflowUserTimeline {
   user_id: number;
   badge_id?: number;
@@ -35,15 +37,6 @@ type SupportedStackoverflowEventType =
 // | "reviewed question" //review a suggested edit
 // | "suggested question" //suggest an edit
 
-// Renders the UI
-export interface StackoverflowActivityEvent {
-  source: "stackoverflow";
-  eventType: SupportedStackoverflowEventType;
-  eventURL: string;
-  questionTitle: string;
-  createdAt: number; //unix epoch time
-}
-
 function deriveStackoverflowEventType(
   timelineType: string,
   postType: string
@@ -65,7 +58,7 @@ function deriveStackoverflowEventType(
 
 export function convertStackoverflowUserTimeline(
   external: StackoverflowUserTimeline
-): StackoverflowActivityEvent {
+): ActivityEvent {
   return {
     source: "stackoverflow",
     eventType: deriveStackoverflowEventType(
@@ -73,7 +66,7 @@ export function convertStackoverflowUserTimeline(
       external.post_type
     ),
     eventURL: external.link,
-    questionTitle: external.title || "",
-    createdAt: external.creation_date,
+    description: external.title || "",
+    createdAt: new Date(external.creation_date * 1000),
   };
 }
