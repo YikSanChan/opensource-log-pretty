@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
-import {
-  listGithubActivityEvents,
-  listStackoverflowActivityEvents,
-} from "./api";
+import { listActivityEvents } from "./api";
 import { Layout, Table } from "antd";
 import { ActivityEvent } from "./types";
 import { formatCommaSeparatedURLs, formatDate } from "./format";
@@ -11,7 +8,6 @@ const { Content } = Layout;
 
 const GITHUB_USERNAME = "yiksanchan";
 const STACKOVERFLOW_USERID = 7550592;
-const STACKEXCHANGE_API_DEFAULT_PAGE_SIZE = 30;
 
 const columns = [
   {
@@ -44,39 +40,20 @@ const columns = [
 ];
 
 function App() {
-  const [
-    stackoverflowActivityEvents,
-    setStackoverflowActivityEvents,
-  ] = useState<ActivityEvent[]>([]);
-
-  const [githubActivityEvents, setGithubActivityEvents] = useState<
-    ActivityEvent[]
-  >([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
-    listStackoverflowActivityEvents(STACKOVERFLOW_USERID).then((events) => {
-      setStackoverflowActivityEvents(events);
+    listActivityEvents(STACKOVERFLOW_USERID, GITHUB_USERNAME).then((events) => {
+      setActivityEvents(events);
     });
   }, []);
 
-  useEffect(() => {
-    listGithubActivityEvents(GITHUB_USERNAME).then((events) =>
-      setGithubActivityEvents(events)
-    );
-  }, []);
-
-  // page size=30: match stackexchange api page size
   return (
     <Layout>
       <Content>
         <Table
-          pagination={{ pageSize: 100 }}
-          dataSource={githubActivityEvents}
-          columns={columns}
-        />
-        <Table
-          pagination={{ pageSize: STACKEXCHANGE_API_DEFAULT_PAGE_SIZE }}
-          dataSource={stackoverflowActivityEvents}
+          pagination={{ pageSize: 30 }}
+          dataSource={activityEvents}
           columns={columns}
         />
       </Content>

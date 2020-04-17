@@ -35,7 +35,23 @@ const STACKEXCHANGE_DOMAIN = "https://api.stackexchange.com/2.2";
 
 const octokit = new Octokit();
 
-export async function listStackoverflowActivityEvents(
+export async function listActivityEvents(
+  stackoverflowUserId: number,
+  githubUsername: string
+): Promise<ActivityEvent[]> {
+  const fetchStackoverflow = listStackoverflowActivityEvents(
+    stackoverflowUserId
+  );
+  const fetchGithub = listGithubActivityEvents(githubUsername);
+  return Promise.all([fetchStackoverflow, fetchGithub]).then((responses) =>
+    responses.flat().sort(function (a: ActivityEvent, b: ActivityEvent) {
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    })
+  );
+}
+
+// TODO: fetch all
+async function listStackoverflowActivityEvents(
   userId: number
 ): Promise<ActivityEvent[]> {
   const url = `${STACKEXCHANGE_DOMAIN}/users/${userId}/timeline?site=stackoverflow&filter=!))yem8S`;
@@ -49,7 +65,8 @@ export async function listStackoverflowActivityEvents(
   );
 }
 
-export async function listGithubActivityEvents(
+// TODO: fetch all
+async function listGithubActivityEvents(
   username: string
 ): Promise<ActivityEvent[]> {
   const params: ListUserPublicEventsParameters = { username, per_page: 100 };
