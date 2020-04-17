@@ -1,7 +1,4 @@
-/**
- * Stackoverflow event
- */
-
+// Comes from Stackexchange API
 // https://api.stackexchange.com/docs/types/user-timeline
 export interface StackoverflowUserTimeline {
   user_id: number;
@@ -25,7 +22,7 @@ export interface StackoverflowUserTimeline {
   creation_date: number; //unix epoch time
 }
 
-type StackoverflowEventType =
+type SupportedStackoverflowEventType =
   | "commented question" //post a comment
   | "asked question" //
   | "revision question" //edit a post
@@ -38,9 +35,10 @@ type StackoverflowEventType =
 // | "reviewed question" //review a suggested edit
 // | "suggested question" //suggest an edit
 
+// Renders the UI
 export interface StackoverflowActivityEvent {
-  source: "github" | "stackoverflow"; // TODO: remove this?
-  eventType: StackoverflowEventType;
+  source: "stackoverflow";
+  eventType: SupportedStackoverflowEventType;
   eventURL: string;
   questionTitle: string;
   createdAt: number; //unix epoch time
@@ -49,7 +47,7 @@ export interface StackoverflowActivityEvent {
 function deriveStackoverflowEventType(
   timelineType: string,
   postType: string
-): StackoverflowEventType {
+): SupportedStackoverflowEventType {
   const eventType = `${timelineType} ${postType}`;
   switch (eventType) {
     case "commented question":

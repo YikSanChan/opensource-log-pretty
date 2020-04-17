@@ -2,7 +2,14 @@ import {
   convertStackoverflowUserTimeline,
   StackoverflowActivityEvent,
   StackoverflowUserTimeline,
-} from "./types";
+} from "./stackoverflow-types";
+import {
+  convertGithubEvent,
+  GithubActivityEvent,
+  GithubEvent,
+  ListUserPublicEventsParameters,
+} from "./github-types";
+import { Octokit } from "@octokit/rest";
 
 // Copy from https://css-tricks.com/using-fetch/
 function fetch2(url: string) {
@@ -26,7 +33,8 @@ function handleJSONResponse(response: Response) {
 }
 
 const STACKEXCHANGE_DOMAIN = "https://api.stackexchange.com/2.2";
-const GITHUB_DOMAIN = "https://api.github.com";
+
+const octokit = new Octokit();
 
 export async function listStackoverflowActivityEvents(
   userId: number
@@ -40,4 +48,20 @@ export async function listStackoverflowActivityEvents(
           stackoverflowActivityEvent.eventType !== "unrecognized"
       )
   );
+}
+
+export async function listGithubActivityEvents(
+  username: string
+): Promise<GithubActivityEvent[]> {
+  const params: ListUserPublicEventsParameters = { username, per_page: 100 };
+  return octokit.activity
+    .listPublicEventsForUser(params)
+    .then((resp) =>
+      (resp.data as GithubEvent[])
+        .map((githubEvent) => convertGithubEvent(githubEvent))
+        .filter(
+          (githubActivityEvent) =>
+            githubActivityEvent.eventType !== "unrecognized"
+        )
+    );
 }
