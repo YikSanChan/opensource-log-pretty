@@ -1,15 +1,14 @@
 import {
   convertStackoverflowUserTimeline,
-  StackoverflowActivityEvent,
   StackoverflowUserTimeline,
 } from "./stackoverflow-types";
 import {
   convertGithubEvent,
-  GithubActivityEvent,
   GithubEvent,
   ListUserPublicEventsParameters,
 } from "./github-types";
 import { Octokit } from "@octokit/rest";
+import { ActivityEvent } from "./types";
 
 // Copy from https://css-tricks.com/using-fetch/
 function fetch2(url: string) {
@@ -38,7 +37,7 @@ const octokit = new Octokit();
 
 export async function listStackoverflowActivityEvents(
   userId: number
-): Promise<StackoverflowActivityEvent[]> {
+): Promise<ActivityEvent[]> {
   const url = `${STACKEXCHANGE_DOMAIN}/users/${userId}/timeline?site=stackoverflow&filter=!))yem8S`;
   return fetch2(url).then((data) =>
     (data.items as StackoverflowUserTimeline[])
@@ -52,7 +51,7 @@ export async function listStackoverflowActivityEvents(
 
 export async function listGithubActivityEvents(
   username: string
-): Promise<GithubActivityEvent[]> {
+): Promise<ActivityEvent[]> {
   const params: ListUserPublicEventsParameters = { username, per_page: 100 };
   return octokit.activity
     .listPublicEventsForUser(params)

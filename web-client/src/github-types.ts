@@ -1,4 +1,5 @@
 import { Endpoints } from "@octokit/types";
+import { ActivityEvent } from "./types";
 
 export type ListUserPublicEventsParameters = Endpoints["GET /users/:username/events/public"]["parameters"];
 
@@ -150,15 +151,6 @@ export interface GithubEvent {
   created_at: string; //"2020-04-17T18:08:49Z"
 }
 
-// Renders our UI
-export interface GithubActivityEvent {
-  source: "github";
-  eventType: string;
-  eventURL: string;
-  questionTitle: string;
-  createdAt: Date;
-}
-
 function deriveGithubEventTypeAndURL(
   githubEvent: GithubEvent
 ): [string, string] {
@@ -208,15 +200,13 @@ function deriveGithubEventTypeAndURL(
   }
 }
 
-export function convertGithubEvent(
-  githubEvent: GithubEvent
-): GithubActivityEvent {
+export function convertGithubEvent(githubEvent: GithubEvent): ActivityEvent {
   const [eventType, eventURL] = deriveGithubEventTypeAndURL(githubEvent);
   return {
     source: "github",
     eventType,
     eventURL,
-    questionTitle: "???",
+    description: "???",
     createdAt: new Date(githubEvent.created_at),
   };
 }

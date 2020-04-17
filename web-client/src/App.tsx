@@ -4,10 +4,9 @@ import {
   listGithubActivityEvents,
   listStackoverflowActivityEvents,
 } from "./api";
-import { StackoverflowActivityEvent } from "./stackoverflow-types";
 import { Layout, Table } from "antd";
-import { formatUnixEpochSecond } from "./format";
-import { GithubActivityEvent } from "./github-types";
+import { ActivityEvent } from "./types";
+import { formatDate } from "./format";
 const { Content } = Layout;
 
 const GITHUB_USERNAME = "yiksanchan";
@@ -19,7 +18,7 @@ const columns = [
     title: "Created At",
     dataIndex: "createdAt",
     key: "createdAt",
-    render: (createdAt: number) => formatUnixEpochSecond(createdAt),
+    render: (createdAt: Date) => formatDate(createdAt),
   },
   {
     title: "Source",
@@ -38,9 +37,9 @@ const columns = [
     render: (eventURL: string) => <a href={eventURL}>Click</a>,
   },
   {
-    title: "Question Title",
-    dataIndex: "questionTitle",
-    key: "questionTitle",
+    title: "Description",
+    dataIndex: "description",
+    key: "description",
   },
 ];
 
@@ -48,10 +47,10 @@ function App() {
   const [
     stackoverflowActivityEvents,
     setStackoverflowActivityEvents,
-  ] = useState<StackoverflowActivityEvent[]>([]);
+  ] = useState<ActivityEvent[]>([]);
 
   const [githubActivityEvents, setGithubActivityEvents] = useState<
-    GithubActivityEvent[]
+    ActivityEvent[]
   >([]);
 
   useEffect(() => {
