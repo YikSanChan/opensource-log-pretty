@@ -6,7 +6,7 @@ import {
 } from "./api";
 import { Layout, Table } from "antd";
 import { ActivityEvent } from "./types";
-import { formatDate } from "./format";
+import { formatCommaSeparatedURLs, formatDate } from "./format";
 const { Content } = Layout;
 
 const GITHUB_USERNAME = "yiksanchan";
@@ -34,7 +34,7 @@ const columns = [
     title: "Event URL",
     dataIndex: "eventURL",
     key: "eventURL",
-    render: (eventURL: string) => <a href={eventURL}>Click</a>,
+    render: (eventURL: string) => formatCommaSeparatedURLs({ s: eventURL }),
   },
   {
     title: "Description",

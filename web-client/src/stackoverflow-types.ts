@@ -66,6 +66,7 @@ export function convertStackoverflowUserTimeline(
       external.post_type
     ),
     eventURL: external.link,
+    // TODO: other than just title, refer https://stackoverflow.com/users/7550592/yik-san-chan?tab=activity&sort=all
     description: external.title || "",
     createdAt: new Date(external.creation_date * 1000),
   };

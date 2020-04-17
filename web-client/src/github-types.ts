@@ -151,6 +151,8 @@ export interface GithubEvent {
   created_at: string; //"2020-04-17T18:08:49Z"
 }
 
+// Derives event type and event url
+// Note that for event "push commits", the returned event url is a comma separated string: url1,url2,url3
 function deriveGithubEventTypeAndURL(
   githubEvent: GithubEvent
 ): [string, string] {
@@ -206,7 +208,8 @@ export function convertGithubEvent(githubEvent: GithubEvent): ActivityEvent {
     source: "github",
     eventType,
     eventURL,
-    description: "???",
+    // TODO: refer timeline https://github.com/
+    description: githubEvent.repo.name,
     createdAt: new Date(githubEvent.created_at),
   };
 }
