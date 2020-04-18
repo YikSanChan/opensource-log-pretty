@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { listActivityEvents } from "./api";
-import { Layout, List } from "antd";
+import { Col, List, Row } from "antd";
 import { ActivityEvent } from "./types";
 import { AiOutlineGithub } from "react-icons/ai";
 import { FaStackOverflow } from "react-icons/fa";
 import { formatCommaSeparatedURLs } from "./format";
-
-const { Content } = Layout;
 
 const GITHUB_USERNAME = "yiksanchan";
 const STACKOVERFLOW_USERID = 7550592;
@@ -16,7 +14,7 @@ function formatDate(date: Date): string {
   const options = {
     year: "numeric",
     month: "2-digit",
-    day: "numeric",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
   };
@@ -33,8 +31,8 @@ function App() {
   }, []);
 
   return (
-    <Layout>
-      <Content>
+    <Row>
+      <Col span={12} offset={6}>
         <List
           itemLayout="horizontal"
           dataSource={activityEvents}
@@ -62,8 +60,8 @@ function App() {
             </List.Item>
           )}
         />
-      </Content>
-    </Layout>
+      </Col>
+    </Row>
   );
 }
 
