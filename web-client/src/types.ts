@@ -1,7 +1,18 @@
 export interface ActivityEvent {
   source: "github" | "stackoverflow";
-  eventType: string;
-  eventURL: string;
-  description: string;
-  createdAt: Date;
+  what: DoSomething;
+  where?: Somewhere;
+  when: Date;
+}
+
+export interface DoSomething {
+  do: string;
+  somethingDisplay: string;
+  somethingURL: string;
+}
+
+export interface Somewhere {
+  prep: string;
+  somewhereDisplay: string;
+  somewhereURL: string;
 }

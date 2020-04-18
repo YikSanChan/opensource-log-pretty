@@ -1,5 +1,5 @@
 import { Endpoints } from "@octokit/types";
-import { ActivityEvent } from "./types";
+import { ActivityEvent, DoSomething, Somewhere } from "./types";
 
 export type ListUserPublicEventsParameters = Endpoints["GET /users/:username/events/public"]["parameters"];
 
@@ -62,6 +62,7 @@ interface Repo {
 }
 
 interface ForkedRepo {
+  full_name: string;
   html_url: string;
 }
 
@@ -78,14 +79,17 @@ interface IssueComment {
 }
 
 interface Commit {
+  message: string;
   url: string; // this is a api url, not a html url
 }
 
 interface PullRequest {
+  title: string;
   html_url: string;
 }
 
 interface Issue {
+  title: string;
   html_url: string;
 }
 
@@ -116,6 +120,7 @@ interface CreateEventPayload extends Payload {
 interface IssueCommentEventPayload extends Payload {
   action: GithubIssueCommentAction;
   comment: IssueComment;
+  issue: Issue;
 }
 
 // https://developer.github.com/v3/activity/events/types/#pullrequestevent
@@ -129,7 +134,7 @@ interface ForkEventPayload extends Payload {
   forkee: ForkedRepo;
 }
 
-// https://developer.github.com/v3/activity/events/types/#forkevent
+// https://developer.github.com/v3/activity/events/types/#issuesevent
 interface IssuesEventPayload extends Payload {
   action: GithubIssuesAction;
   issue: Issue;
@@ -139,6 +144,7 @@ interface IssuesEventPayload extends Payload {
 interface PullRequestReviewCommentEventPayload extends Payload {
   action: PullRequestReviewCommentAction;
   comment: PullRequestComment;
+  pull_request: PullRequest;
 }
 
 // Comes from Github API
@@ -151,65 +157,144 @@ export interface GithubEvent {
   created_at: string; //"2020-04-17T18:08:49Z"
 }
 
-// Derives event type and event url
-// Note that for event "push commits", the returned event url is a comma separated string: url1,url2,url3
-function deriveGithubEventTypeAndURL(
+interface DoSomethingSomewhere {
+  what: DoSomething;
+  where?: Somewhere;
+}
+
+function deriveGithubEventAndSubject(
   githubEvent: GithubEvent
-): [string, string] {
+): DoSomethingSomewhere {
   const repoName = githubEvent.repo.name;
+  const repoURL = `https://github.com/${repoName}`;
+  const atRepo: Somewhere = {
+    prep: "at",
+    somewhereDisplay: repoName,
+    somewhereURL: repoURL,
+  };
   if (githubEvent.type === "WatchEvent") {
-    return ["starred repository", githubEvent.repo.url];
+    return {
+      what: {
+        do: "starred repository",
+        somethingDisplay: repoName,
+        somethingURL: repoURL,
+      },
+    };
   } else if (githubEvent.type === "PushEvent") {
-    const commitURLs = (githubEvent.payload as PushEventPayload).commits
-      .map((commit) => commit.url)
-      .join(",");
-    return ["pushed commits", commitURLs];
+    const payload = githubEvent.payload as PushEventPayload;
+    const commitMessages = JSON.stringify(
+      payload.commits.map((commit) => commit.message)
+    );
+    const commitURLs = JSON.stringify(
+      payload.commits.map((commit) => commit.url)
+    );
+    return {
+      what: {
+        do: "pushed commits",
+        somethingDisplay: commitMessages,
+        somethingURL: commitURLs,
+      },
+      where: atRepo,
+    };
   } else if (githubEvent.type === "CreateEvent") {
     const payload = githubEvent.payload as CreateEventPayload;
-    let eventType: string;
-    let eventURL: string;
     if (payload.ref_type === "branch") {
-      eventType = "created branch";
-      eventURL = `https://github.com/${repoName}/tree/${payload.ref}`;
+      return {
+        what: {
+          do: "created branch",
+          somethingDisplay: payload.ref,
+          somethingURL: `https://github.com/${repoName}/tree/${payload.ref}`,
+        },
+        where: atRepo,
+      };
     } else if (payload.ref_type === "repository") {
-      eventType = "created repository";
-      eventURL = `https://github.com/${repoName}`;
+      return {
+        what: {
+          do: "created repository",
+          somethingDisplay: repoName,
+          somethingURL: repoURL,
+        },
+      };
     } else {
-      eventType = "unrecognized";
-      eventURL = "";
+      return {
+        what: {
+          do: "unrecognized",
+          somethingDisplay: "",
+          somethingURL: "",
+        },
+      };
     }
-    return [eventType, eventURL];
   } else if (githubEvent.type === "IssueCommentEvent") {
     const payload = githubEvent.payload as IssueCommentEventPayload;
-    return [`${payload.action} issue comment`, payload.comment.html_url];
+    return {
+      what: {
+        do: `${payload.action} issue-comment`,
+        somethingDisplay: payload.issue.title,
+        somethingURL: payload.comment.html_url,
+      },
+      where: atRepo,
+    };
   } else if (githubEvent.type === "PullRequestEvent") {
     const payload = githubEvent.payload as PullRequestEventPayload;
-    return [`${payload.action} pull-request`, payload.pull_request.html_url];
+    return {
+      what: {
+        do: `${payload.action} pull-request`,
+        somethingDisplay: payload.pull_request.title,
+        somethingURL: payload.pull_request.html_url,
+      },
+      where: atRepo,
+    };
   } else if (githubEvent.type === "ForkEvent") {
     const payload = githubEvent.payload as ForkEventPayload;
-    return ["forked repository", payload.forkee.html_url];
+    return {
+      what: {
+        do: "forked repository",
+        somethingDisplay: repoName,
+        somethingURL: repoURL,
+      },
+      where: {
+        prep: "into",
+        somewhereDisplay: payload.forkee.full_name,
+        somewhereURL: payload.forkee.html_url,
+      },
+    };
   } else if (githubEvent.type === "IssueEvent") {
     const payload = githubEvent.payload as IssuesEventPayload;
-    return [`${payload.action} issue`, payload.issue.html_url];
+    return {
+      what: {
+        do: `${payload.action} issue`,
+        somethingDisplay: payload.issue.title,
+        somethingURL: payload.issue.html_url,
+      },
+      where: atRepo,
+    };
   } else if (githubEvent.type === "PullRequestReviewCommentEvent") {
     const payload = githubEvent.payload as PullRequestReviewCommentEventPayload;
-    return [
-      `${payload.action} pull-request-review-comment`,
-      payload.comment.html_url,
-    ];
+    return {
+      what: {
+        do: `${payload.action} pull-request-review-comment`,
+        somethingDisplay: payload.pull_request.title,
+        somethingURL: payload.comment.html_url,
+      },
+      where: atRepo,
+    };
   } else {
-    return ["unrecognized", ""];
+    return {
+      what: {
+        do: "unrecognized",
+        somethingDisplay: "",
+        somethingURL: "",
+      },
+    };
   }
 }
 
 export function convertGithubEvent(githubEvent: GithubEvent): ActivityEvent {
-  const [eventType, eventURL] = deriveGithubEventTypeAndURL(githubEvent);
+  const { what, where } = deriveGithubEventAndSubject(githubEvent);
   return {
     source: "github",
-    eventType,
-    eventURL,
-    // TODO: refer timeline https://github.com/
-    description: githubEvent.repo.name,
-    createdAt: new Date(githubEvent.created_at),
+    what,
+    where,
+    when: new Date(githubEvent.created_at),
   };
 }

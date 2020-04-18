@@ -20,6 +20,8 @@ export interface StackoverflowUserTimeline {
     | "accepted"
     | "reviewed"
     | "suggested";
+  // TODO: is it possible to have null question title?
+  // TODO: title contains html encoded string such as &gt;
   title?: string;
   creation_date: number; //unix epoch time
 }
@@ -61,13 +63,14 @@ export function convertStackoverflowUserTimeline(
 ): ActivityEvent {
   return {
     source: "stackoverflow",
-    eventType: deriveStackoverflowEventType(
-      external.timeline_type,
-      external.post_type
-    ),
-    eventURL: external.link,
-    // TODO: other than just title, refer https://stackoverflow.com/users/7550592/yik-san-chan?tab=activity&sort=all
-    description: external.title || "",
-    createdAt: new Date(external.creation_date * 1000),
+    what: {
+      do: deriveStackoverflowEventType(
+        external.timeline_type,
+        external.post_type
+      ),
+      somethingDisplay: external.title || "",
+      somethingURL: external.link,
+    },
+    when: new Date(external.creation_date * 1000),
   };
 }
