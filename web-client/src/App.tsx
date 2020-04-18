@@ -1,43 +1,27 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { listActivityEvents } from "./api";
-import { Layout, Table } from "antd";
+import { Layout, List } from "antd";
 import { ActivityEvent } from "./types";
-import { formatCommaSeparatedURLs, formatDate } from "./format";
+import { AiOutlineGithub } from "react-icons/ai";
+import { FaStackOverflow } from "react-icons/fa";
+import { formatCommaSeparatedURLs } from "./format";
+
 const { Content } = Layout;
 
 const GITHUB_USERNAME = "yiksanchan";
 const STACKOVERFLOW_USERID = 7550592;
 
-const columns = [
-  {
-    title: "Created At",
-    dataIndex: "createdAt",
-    key: "createdAt",
-    render: (createdAt: Date) => formatDate(createdAt),
-  },
-  {
-    title: "Source",
-    dataIndex: "source",
-    key: "source",
-  },
-  {
-    title: "Event Type",
-    dataIndex: "eventType",
-    key: "eventType",
-  },
-  {
-    title: "Event URL",
-    dataIndex: "eventURL",
-    key: "eventURL",
-    render: (eventURL: string) => formatCommaSeparatedURLs({ s: eventURL }),
-  },
-  {
-    title: "Description",
-    dataIndex: "description",
-    key: "description",
-  },
-];
+function formatDate(date: Date): string {
+  const options = {
+    year: "numeric",
+    month: "2-digit",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+  return date.toLocaleString("en", options);
+}
 
 function App() {
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
@@ -51,10 +35,32 @@ function App() {
   return (
     <Layout>
       <Content>
-        <Table
-          pagination={{ pageSize: 30 }}
+        <List
+          itemLayout="horizontal"
           dataSource={activityEvents}
-          columns={columns}
+          renderItem={(item) => (
+            <List.Item>
+              <List.Item.Meta
+                avatar={
+                  item.source === "github" ? (
+                    <AiOutlineGithub style={{ fontSize: "20px" }} />
+                  ) : (
+                    <FaStackOverflow style={{ fontSize: "20px" }} />
+                  )
+                }
+                title={
+                  <div>
+                    At {formatDate(item.createdAt)},{" "}
+                    {formatCommaSeparatedURLs({
+                      commaSeparatedURL: item.eventURL,
+                      content: item.eventType,
+                    })}
+                  </div>
+                }
+                description={item.description}
+              />
+            </List.Item>
+          )}
         />
       </Content>
     </Layout>
