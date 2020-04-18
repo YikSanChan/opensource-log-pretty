@@ -4,10 +4,15 @@ import { listActivityEvents } from "./api";
 import { Button, Col, Form, Input, List, Row } from "antd";
 import { ActivityEvent } from "./types";
 import { FaGithub, FaStackOverflow } from "react-icons/fa";
-import { formatCommaSeparatedURLs } from "./format";
 import { Typography } from "antd";
 
 const { Title } = Typography;
+
+function zip2(a: string[], b: string[]) {
+  const arr = [];
+  for (const key in a) arr.push([a[key], b[key]]);
+  return arr;
+}
 
 function formatDate(date: Date): string {
   const options = {
@@ -18,6 +23,69 @@ function formatDate(date: Date): string {
     minute: "2-digit",
   };
   return date.toLocaleString("en", options);
+}
+
+function ActivityEventRow(props: ActivityEvent) {
+  // Treat this differently
+  const isGithubPushCommits =
+    props.source === "github" && props.what.do === "pushed commits";
+  const when = <span>At {formatDate(props.when)}, </span>;
+  const what = (
+    <span>
+      {props.what.do}{" "}
+      {isGithubPushCommits ? (
+        ""
+      ) : (
+        <a href={props.what.somethingURL}>{props.what.somethingDisplay}</a>
+      )}
+    </span>
+  );
+  let where;
+  if (props.where) {
+    where = (
+      <span>
+        {" "}
+        {props.where.prep}{" "}
+        <a href={props.where.somewhereURL}>{props.where.somewhereDisplay}</a>
+      </span>
+    );
+  }
+  const title = (
+    <div>
+      {when}
+      {what}
+      {where || ""}
+    </div>
+  );
+  let description;
+  if (isGithubPushCommits) {
+    const commitMessages = JSON.parse(props.what.somethingDisplay);
+    const commitURLs = JSON.parse(props.what.somethingURL);
+    description = (
+      <ul>
+        <li>
+          {zip2(commitMessages, commitURLs).map((e) => (
+            <a href={e[1]}>{e[0]}</a>
+          ))}
+        </li>
+      </ul>
+    );
+  }
+  return (
+    <List.Item>
+      <List.Item.Meta
+        avatar={
+          props.source === "github" ? (
+            <FaGithub style={{ fontSize: "20px" }} />
+          ) : (
+            <FaStackOverflow style={{ fontSize: "20px" }} />
+          )
+        }
+        title={title}
+        description={description}
+      />
+    </List.Item>
+  );
 }
 
 function App() {
@@ -81,29 +149,7 @@ function App() {
         <List
           itemLayout="horizontal"
           dataSource={activityEvents}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={
-                  item.source === "github" ? (
-                    <FaGithub style={{ fontSize: "20px" }} />
-                  ) : (
-                    <FaStackOverflow style={{ fontSize: "20px" }} />
-                  )
-                }
-                title={
-                  <div>
-                    At {formatDate(item.createdAt)},{" "}
-                    {formatCommaSeparatedURLs({
-                      commaSeparatedURL: item.eventURL,
-                      content: item.eventType,
-                    })}
-                  </div>
-                }
-                description={item.description}
-              />
-            </List.Item>
-          )}
+          renderItem={(item) => <ActivityEventRow {...item} />}
         />
       </Col>
     </Row>

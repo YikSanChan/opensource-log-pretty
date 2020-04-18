@@ -58,7 +58,7 @@ export function listActivityEvents(
 
   return Promise.all([fetchStackoverflow, fetchGithub]).then((responses) =>
     responses.flat().sort(function (a: ActivityEvent, b: ActivityEvent) {
-      return b.createdAt.getTime() - a.createdAt.getTime();
+      return b.when.getTime() - a.when.getTime();
     })
   );
 }
@@ -96,7 +96,7 @@ function listStackoverflowActivityEvents(
       .map((stackoverflowUserTimeline) =>
         convertStackoverflowUserTimeline(stackoverflowUserTimeline)
       )
-      .filter((event) => event.eventType !== "unrecognized")
+      .filter((event) => event.what.do !== "unrecognized")
   );
 }
 
@@ -132,6 +132,6 @@ function listGithubActivityEvents(username: string): Promise<ActivityEvent[]> {
   ).then((githubEvents) =>
     githubEvents
       .map((githubEvent) => convertGithubEvent(githubEvent))
-      .filter((event) => event.eventType !== "unrecognized")
+      .filter((event) => event.what.do !== "unrecognized")
   );
 }
