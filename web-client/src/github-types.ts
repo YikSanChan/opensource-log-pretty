@@ -1,5 +1,5 @@
 import { Endpoints } from "@octokit/types";
-import { ActivityEvent, DoSomething, Somewhere } from "./types";
+import { ActivityEvent, DoSomething, Somewhere, Who } from "./types";
 
 export type ListUserPublicEventsParameters = Endpoints["GET /users/:username/events/public"]["parameters"];
 
@@ -291,8 +291,13 @@ function deriveGithubEventAndSubject(
 
 export function convertGithubEvent(githubEvent: GithubEvent): ActivityEvent {
   const { what, where } = deriveGithubEventAndSubject(githubEvent);
+  const who: Who = {
+    username: githubEvent.actor.display_login,
+    profileURL: `https://github.com/${githubEvent.actor.display_login}`,
+  };
   return {
     source: "github",
+    who,
     what,
     where,
     when: new Date(githubEvent.created_at),

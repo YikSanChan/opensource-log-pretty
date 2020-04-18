@@ -29,7 +29,12 @@ function ActivityEventRow(props: ActivityEvent) {
   // Treat this differently
   const isGithubPushCommits =
     props.source === "github" && props.what.do === "pushed commits";
-  const when = <span>At {formatDate(props.when)}, </span>;
+  const when = <span>{formatDate(props.when)}</span>;
+  const who = (
+    <span>
+      <a href={props.who.profileURL}>{props.who.username}</a>
+    </span>
+  );
   const what = (
     <span>
       {props.what.do}{" "}
@@ -52,9 +57,7 @@ function ActivityEventRow(props: ActivityEvent) {
   }
   const title = (
     <div>
-      {when}
-      {what}
-      {where || ""}
+      At {when}, {who} {what} {where || ""}
     </div>
   );
   let description;
