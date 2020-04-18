@@ -3,8 +3,7 @@ import "antd/dist/antd.css";
 import { listActivityEvents } from "./api";
 import { Button, Col, Form, Input, List, Row } from "antd";
 import { ActivityEvent } from "./types";
-import { AiOutlineGithub } from "react-icons/ai";
-import { FaStackOverflow } from "react-icons/fa";
+import { FaGithub, FaStackOverflow } from "react-icons/fa";
 import { formatCommaSeparatedURLs } from "./format";
 import { Typography } from "antd";
 
@@ -59,7 +58,7 @@ function App() {
           <Form.Item
             label={
               <div>
-                <AiOutlineGithub style={{ fontSize: "16px" }} /> GitHub
+                <FaGithub style={{ fontSize: "16px" }} /> GitHub
               </div>
             }
             name="githubUsername"
@@ -90,7 +89,7 @@ function App() {
               <List.Item.Meta
                 avatar={
                   item.source === "github" ? (
-                    <AiOutlineGithub style={{ fontSize: "20px" }} />
+                    <FaGithub style={{ fontSize: "20px" }} />
                   ) : (
                     <FaStackOverflow style={{ fontSize: "20px" }} />
                   )
