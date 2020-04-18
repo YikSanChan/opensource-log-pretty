@@ -66,7 +66,7 @@ function ActivityEventRow(props: ActivityEvent) {
     const commitURLs = JSON.parse(props.what.somethingURL);
     description = (
       <ul>
-        <li>
+        <li style={{ marginLeft: "-20px" }}>
           {zip2(commitMessages, commitURLs).map((e) => (
             <a href={e[1]}>{e[0]}</a>
           ))}
