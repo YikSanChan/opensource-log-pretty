@@ -33,6 +33,13 @@ function handleJSONResponse(response: Response) {
 
 const STACKEXCHANGE_DOMAIN = "https://api.stackexchange.com/2.2";
 
+// Max according to my experiment.
+// https://developer.github.com/v3/activity/events/ says events API doesn't support per_page, but that's not true
+const GITHUB_PAGESIZE = 100;
+
+// Max according to https://api.stackexchange.com/docs/paging
+const STACKEXCHANGE_PAGESIZE = 100;
+
 const octokit = new Octokit();
 
 export function listActivityEvents(
@@ -56,34 +63,75 @@ export function listActivityEvents(
   );
 }
 
-// TODO: fetch all
-async function listStackoverflowActivityEvents(
+function listStackoverflowActivityEvents(
   userId: string
 ): Promise<ActivityEvent[]> {
-  const url = `${STACKEXCHANGE_DOMAIN}/users/${userId}/timeline?site=stackoverflow&filter=!))yem8S`;
-  return fetch2(url).then((data) =>
-    (data.items as StackoverflowUserTimeline[])
-      .map((userTimeline) => convertStackoverflowUserTimeline(userTimeline))
-      .filter(
-        (stackoverflowActivityEvent) =>
-          stackoverflowActivityEvent.eventType !== "unrecognized"
+  function listStackoverflowActivityEventsRecursively(
+    fetchedEvents: StackoverflowUserTimeline[],
+    page: number,
+    userId: string
+  ): Promise<StackoverflowUserTimeline[]> {
+    const url = `${STACKEXCHANGE_DOMAIN}/users/${userId}/timeline?site=stackoverflow&page=${page}&pagesize=${STACKEXCHANGE_PAGESIZE}&filter=!))yem8S`;
+    return fetch2(url).then((resp) => {
+      const newEvents = resp.items as StackoverflowUserTimeline[];
+      const newFetchedEvents = [...fetchedEvents, ...newEvents];
+      if (!resp.has_more) {
+        return newFetchedEvents;
+      } else {
+        return listStackoverflowActivityEventsRecursively(
+          newFetchedEvents,
+          page + 1,
+          userId
+        );
+      }
+    });
+  }
+
+  return listStackoverflowActivityEventsRecursively(
+    [],
+    1,
+    userId
+  ).then((stackoverflowUserTimelines) =>
+    stackoverflowUserTimelines
+      .map((stackoverflowUserTimeline) =>
+        convertStackoverflowUserTimeline(stackoverflowUserTimeline)
       )
+      .filter((event) => event.eventType !== "unrecognized")
   );
 }
 
-// TODO: fetch all
-async function listGithubActivityEvents(
-  username: string
-): Promise<ActivityEvent[]> {
-  const params: ListUserPublicEventsParameters = { username, per_page: 100 };
-  return octokit.activity
-    .listPublicEventsForUser(params)
-    .then((resp) =>
-      (resp.data as GithubEvent[])
-        .map((githubEvent) => convertGithubEvent(githubEvent))
-        .filter(
-          (githubActivityEvent) =>
-            githubActivityEvent.eventType !== "unrecognized"
-        )
-    );
+function listGithubActivityEvents(username: string): Promise<ActivityEvent[]> {
+  function listGithubActivityEventsRecursively(
+    fetchedEvents: GithubEvent[],
+    page: number,
+    username: string
+  ): Promise<GithubEvent[]> {
+    const params: ListUserPublicEventsParameters = {
+      username,
+      page,
+      per_page: GITHUB_PAGESIZE,
+    };
+    return octokit.activity.listPublicEventsForUser(params).then((resp) => {
+      const newEvents = resp.data as GithubEvent[];
+      if (newEvents.length === 0) {
+        return fetchedEvents;
+      }
+      const newFetchedEvents = [...fetchedEvents, ...newEvents];
+      return listGithubActivityEventsRecursively(
+        newFetchedEvents,
+        page + 1,
+        username
+      );
+    });
+  }
+
+  return listGithubActivityEventsRecursively(
+    [],
+    1,
+    username
+  ).then((githubEvents) =>
+    githubEvents
+      .map((githubEvent) => convertGithubEvent(githubEvent))
+      .filter((event) => event.eventType !== "unrecognized")
+  );
 }
