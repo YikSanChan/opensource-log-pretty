@@ -6,6 +6,9 @@ import { ActivityEvent } from "./types";
 import { AiOutlineGithub } from "react-icons/ai";
 import { FaStackOverflow } from "react-icons/fa";
 import { formatCommaSeparatedURLs } from "./format";
+import { Typography } from "antd";
+
+const { Title } = Typography;
 
 // const GITHUB_USERNAME = "yiksanchan";
 // const STACKOVERFLOW_USERID = 7550592;
@@ -52,7 +55,8 @@ function App() {
     <>
       <Row>
         <Col span={12} offset={6}>
-          <Form onFinish={onFinish} layout="inline">
+          <Title>Open Source Tracker</Title>
+          <Form onFinish={onFinish} layout="vertical">
             <Form.Item label="Github Username" name="githubUsername">
               <Input />
             </Form.Item>
@@ -65,10 +69,6 @@ function App() {
               </Button>
             </Form.Item>
           </Form>
-        </Col>
-      </Row>
-      <Row>
-        <Col span={12} offset={6}>
           <List
             itemLayout="horizontal"
             dataSource={activityEvents}
