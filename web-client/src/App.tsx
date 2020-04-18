@@ -52,53 +52,65 @@ function App() {
   }
 
   return (
-    <>
-      <Row>
-        <Col span={12} offset={6}>
-          <Title>Open Source Tracker</Title>
-          <Form onFinish={onFinish} layout="vertical">
-            <Form.Item label="Github Username" name="githubUsername">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Stackoverflow UserID" name="stackoverflowUserId">
-              <Input />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Try!
-              </Button>
-            </Form.Item>
-          </Form>
-          <List
-            itemLayout="horizontal"
-            dataSource={activityEvents}
-            renderItem={(item) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={
-                    item.source === "github" ? (
-                      <AiOutlineGithub style={{ fontSize: "20px" }} />
-                    ) : (
-                      <FaStackOverflow style={{ fontSize: "20px" }} />
-                    )
-                  }
-                  title={
-                    <div>
-                      At {formatDate(item.createdAt)},{" "}
-                      {formatCommaSeparatedURLs({
-                        commaSeparatedURL: item.eventURL,
-                        content: item.eventType,
-                      })}
-                    </div>
-                  }
-                  description={item.description}
-                />
-              </List.Item>
-            )}
-          />
-        </Col>
-      </Row>
-    </>
+    <Row>
+      <Col span={12} offset={6}>
+        <Title>Open Source Tracker</Title>
+        <Form onFinish={onFinish} layout="vertical">
+          <Form.Item
+            label={
+              <div>
+                <AiOutlineGithub style={{ fontSize: "16px" }} /> GitHub
+              </div>
+            }
+            name="githubUsername"
+          >
+            <Input placeholder="username" />
+          </Form.Item>
+          <Form.Item
+            label={
+              <div>
+                <FaStackOverflow style={{ fontSize: "16px" }} /> Stack Overflow
+              </div>
+            }
+            name="stackoverflowUserId"
+          >
+            <Input placeholder="user id" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Try!
+            </Button>
+          </Form.Item>
+        </Form>
+        <List
+          itemLayout="horizontal"
+          dataSource={activityEvents}
+          renderItem={(item) => (
+            <List.Item>
+              <List.Item.Meta
+                avatar={
+                  item.source === "github" ? (
+                    <AiOutlineGithub style={{ fontSize: "20px" }} />
+                  ) : (
+                    <FaStackOverflow style={{ fontSize: "20px" }} />
+                  )
+                }
+                title={
+                  <div>
+                    At {formatDate(item.createdAt)},{" "}
+                    {formatCommaSeparatedURLs({
+                      commaSeparatedURL: item.eventURL,
+                      content: item.eventType,
+                    })}
+                  </div>
+                }
+                description={item.description}
+              />
+            </List.Item>
+          )}
+        />
+      </Col>
+    </Row>
   );
 }
 
