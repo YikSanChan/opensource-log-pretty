@@ -9,9 +9,6 @@ import { Typography } from "antd";
 
 const { Title } = Typography;
 
-// const GITHUB_USERNAME = "yiksanchan";
-// const STACKOVERFLOW_USERID = 7550592;
-
 function formatDate(date: Date): string {
   const options = {
     year: "numeric",
