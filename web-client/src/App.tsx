@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { listActivityEvents } from "./api";
-import { Col, List, Row } from "antd";
+import { Button, Col, Form, Input, List, Row } from "antd";
 import { ActivityEvent } from "./types";
 import { AiOutlineGithub } from "react-icons/ai";
 import { FaStackOverflow } from "react-icons/fa";
 import { formatCommaSeparatedURLs } from "./format";
 
-const GITHUB_USERNAME = "yiksanchan";
-const STACKOVERFLOW_USERID = 7550592;
+// const GITHUB_USERNAME = "yiksanchan";
+// const STACKOVERFLOW_USERID = 7550592;
 
 function formatDate(date: Date): string {
   const options = {
@@ -22,46 +22,83 @@ function formatDate(date: Date): string {
 }
 
 function App() {
+  const [githubUsername, setGithubUsername] = useState<string | undefined>(
+    undefined
+  );
+  const [stackoverflowUserId, setStackoverflowUserId] = useState<
+    string | undefined
+  >(undefined);
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
   useEffect(() => {
-    listActivityEvents(STACKOVERFLOW_USERID, GITHUB_USERNAME).then((events) => {
+    listActivityEvents(stackoverflowUserId, githubUsername).then((events) => {
       setActivityEvents(events);
     });
-  }, []);
+  }, [githubUsername, stackoverflowUserId]);
+
+  function onFinish(values: any) {
+    if (values.githubUsername === undefined || values.githubUsername === "")
+      setGithubUsername(undefined);
+    else setGithubUsername(values.githubUsername);
+    if (
+      values.stackoverflowUserId === undefined ||
+      values.stackoverflowUserId === ""
+    )
+      setStackoverflowUserId(undefined);
+    else setStackoverflowUserId(values.stackoverflowUserId);
+  }
 
   return (
-    <Row>
-      <Col span={12} offset={6}>
-        <List
-          itemLayout="horizontal"
-          dataSource={activityEvents}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={
-                  item.source === "github" ? (
-                    <AiOutlineGithub style={{ fontSize: "20px" }} />
-                  ) : (
-                    <FaStackOverflow style={{ fontSize: "20px" }} />
-                  )
-                }
-                title={
-                  <div>
-                    At {formatDate(item.createdAt)},{" "}
-                    {formatCommaSeparatedURLs({
-                      commaSeparatedURL: item.eventURL,
-                      content: item.eventType,
-                    })}
-                  </div>
-                }
-                description={item.description}
-              />
-            </List.Item>
-          )}
-        />
-      </Col>
-    </Row>
+    <>
+      <Row>
+        <Col span={12} offset={6}>
+          <Form onFinish={onFinish} layout="inline">
+            <Form.Item label="Github Username" name="githubUsername">
+              <Input />
+            </Form.Item>
+            <Form.Item label="Stackoverflow UserID" name="stackoverflowUserId">
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Try!
+              </Button>
+            </Form.Item>
+          </Form>
+        </Col>
+      </Row>
+      <Row>
+        <Col span={12} offset={6}>
+          <List
+            itemLayout="horizontal"
+            dataSource={activityEvents}
+            renderItem={(item) => (
+              <List.Item>
+                <List.Item.Meta
+                  avatar={
+                    item.source === "github" ? (
+                      <AiOutlineGithub style={{ fontSize: "20px" }} />
+                    ) : (
+                      <FaStackOverflow style={{ fontSize: "20px" }} />
+                    )
+                  }
+                  title={
+                    <div>
+                      At {formatDate(item.createdAt)},{" "}
+                      {formatCommaSeparatedURLs({
+                        commaSeparatedURL: item.eventURL,
+                        content: item.eventType,
+                      })}
+                    </div>
+                  }
+                  description={item.description}
+                />
+              </List.Item>
+            )}
+          />
+        </Col>
+      </Row>
+    </>
   );
 }
 
