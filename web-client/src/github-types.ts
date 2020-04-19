@@ -1,5 +1,5 @@
 import { Endpoints } from "@octokit/types";
-import { ActivityEvent, DoSomething, Somewhere, Who } from "./types";
+import { ActivityEvent, What, Where, Who } from "./types";
 
 export type ListUserPublicEventsParameters = Endpoints["GET /users/:username/events/public"]["parameters"];
 
@@ -158,8 +158,8 @@ export interface GithubEvent {
 }
 
 interface DoSomethingSomewhere {
-  what: DoSomething;
-  where?: Somewhere;
+  what: What;
+  where?: Where;
 }
 
 function deriveGithubEventAndSubject(
@@ -167,7 +167,7 @@ function deriveGithubEventAndSubject(
 ): DoSomethingSomewhere {
   const repoName = githubEvent.repo.name;
   const repoURL = `https://github.com/${repoName}`;
-  const atRepo: Somewhere = {
+  const atRepo: Where = {
     prep: "at",
     somewhereDisplay: repoName,
     somewhereURL: repoURL,

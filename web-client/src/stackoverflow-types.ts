@@ -1,6 +1,6 @@
 // Comes from Stackexchange API
 // https://api.stackexchange.com/docs/types/user-timeline
-import { ActivityEvent, DoSomething, Who } from "./types";
+import { ActivityEvent, What, Who } from "./types";
 
 export interface StackoverflowUserTimeline {
   user_id: number;
@@ -65,7 +65,7 @@ export function convertStackoverflowUserTimeline(
     username: external.user_id.toString(),
     profileURL: `https://stackoverflow.com/users/${external.user_id}`,
   };
-  const what: DoSomething = {
+  const what: What = {
     do: deriveStackoverflowEventType(
       external.timeline_type,
       external.post_type

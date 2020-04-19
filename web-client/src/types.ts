@@ -1,8 +1,8 @@
 export interface ActivityEvent {
   source: "github" | "stackoverflow";
   who: Who;
-  what: DoSomething;
-  where?: Somewhere;
+  what: What;
+  where?: Where;
   when: Date;
 }
 
@@ -11,13 +11,13 @@ export interface Who {
   profileURL: string;
 }
 
-export interface DoSomething {
+export interface What {
   do: string;
   somethingDisplay: string;
   somethingURL: string;
 }
 
-export interface Somewhere {
+export interface Where {
   prep: string;
   somewhereDisplay: string;
   somewhereURL: string;
