@@ -121,7 +121,7 @@ function App() {
   return (
     <Row>
       <Col span={12} offset={6}>
-        <Title>Open Source Tracker</Title>
+        <Title>opensource log --pretty</Title>
         <Form onFinish={onFinish} layout="vertical">
           <Form.Item
             label={
