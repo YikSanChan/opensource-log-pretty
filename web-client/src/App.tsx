@@ -5,6 +5,7 @@ import { Button, Col, Form, Input, List, Row } from "antd";
 import { ActivityEvent } from "./types";
 import { FaGithub, FaStackOverflow } from "react-icons/fa";
 import { Typography } from "antd";
+import GitHubButton from "react-github-btn";
 
 const { Title } = Typography;
 
@@ -23,6 +24,33 @@ function formatDate(date: Date): string {
     minute: "2-digit",
   };
   return date.toLocaleString("en", options);
+}
+
+function PageHeader() {
+  return (
+    <Row
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <Col span={12}>
+        <Title>opensource log --pretty</Title>
+      </Col>
+      <Col span={2.5}>
+        <GitHubButton
+          href="https://github.com/yiksanchan/opensource-log-pretty"
+          data-icon="octicon-star"
+          data-show-count
+          data-size="large"
+          aria-label="Star yiksanchan/opensource-log-pretty on GitHub"
+        >
+          Star
+        </GitHubButton>
+      </Col>
+    </Row>
+  );
 }
 
 function ActivityEventRow(props: ActivityEvent) {
@@ -121,7 +149,7 @@ function App() {
   return (
     <Row>
       <Col span={12} offset={6}>
-        <Title>opensource log --pretty</Title>
+        <PageHeader />
         <Form onFinish={onFinish} layout="vertical">
           <Form.Item
             label={
