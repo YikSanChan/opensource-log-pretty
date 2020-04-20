@@ -35,7 +35,7 @@ function PageHeader() {
         justifyContent: "space-between",
       }}
     >
-      <Col span={12}>
+      <Col span={21}>
         <Title>opensource log --pretty</Title>
       </Col>
       <Col span={2.5}>
