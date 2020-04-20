@@ -6,6 +6,7 @@ import { ActivityEvent } from "./types";
 import { FaGithub, FaStackOverflow } from "react-icons/fa";
 import { Typography } from "antd";
 import GitHubButton from "react-github-btn";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -15,6 +16,7 @@ function zip2(a: string[], b: string[]) {
   return arr;
 }
 
+// TODO: it is not respecting 2-digit hour, see https://stackoverflow.com/q/56469995
 function formatDate(date: Date): string {
   const options = {
     year: "numeric",
@@ -24,6 +26,14 @@ function formatDate(date: Date): string {
     minute: "2-digit",
   };
   return date.toLocaleString("en", options);
+}
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
+function convertNullableToUndefinable(nullable: string | null) {
+  return nullable === null ? undefined : nullable;
 }
 
 function PageHeader() {
@@ -119,64 +129,76 @@ function ActivityEventRow(props: ActivityEvent) {
   );
 }
 
-function App() {
-  const [githubUsername, setGithubUsername] = useState<string | undefined>(
-    undefined
+type SearchFormProps = {
+  githubUsername?: string;
+  stackoverflowUserId?: string;
+};
+
+function onFinish(values: any) {
+  let params = {};
+  if (values.githubUsername)
+    params = { ...params, github: values.githubUsername };
+  if (values.stackoverflowUserId)
+    params = { ...params, stackoverflow: values.stackoverflowUserId };
+  const query = new URLSearchParams(params).toString();
+  window.location.href = "?" + query;
+}
+
+function SearchForm(props: SearchFormProps) {
+  return (
+    <Form initialValues={{ ...props }} onFinish={onFinish} layout="vertical">
+      <Form.Item
+        label={
+          <div>
+            <FaGithub style={{ fontSize: "16px" }} /> GitHub
+          </div>
+        }
+        name="githubUsername"
+      >
+        <Input placeholder="username" />
+      </Form.Item>
+      <Form.Item
+        label={
+          <div>
+            <FaStackOverflow style={{ fontSize: "16px" }} /> Stack Overflow
+          </div>
+        }
+        name="stackoverflowUserId"
+      >
+        <Input placeholder="user id" />
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Try!
+        </Button>
+      </Form.Item>
+    </Form>
   );
-  const [stackoverflowUserId, setStackoverflowUserId] = useState<
-    string | undefined
-  >(undefined);
+}
+
+function Content() {
+  const query = useQuery();
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
+
+  const stackoverflowUserId = convertNullableToUndefinable(
+    query.get("stackoverflow")
+  );
+  const githubUsername = convertNullableToUndefinable(query.get("github"));
 
   useEffect(() => {
     listActivityEvents(stackoverflowUserId, githubUsername).then((events) => {
       setActivityEvents(events);
     });
-  }, [githubUsername, stackoverflowUserId]);
-
-  function onFinish(values: any) {
-    if (values.githubUsername === undefined || values.githubUsername === "")
-      setGithubUsername(undefined);
-    else setGithubUsername(values.githubUsername);
-    if (
-      values.stackoverflowUserId === undefined ||
-      values.stackoverflowUserId === ""
-    )
-      setStackoverflowUserId(undefined);
-    else setStackoverflowUserId(values.stackoverflowUserId);
-  }
+  }, []);
 
   return (
     <Row>
       <Col span={12} offset={6}>
         <PageHeader />
-        <Form onFinish={onFinish} layout="vertical">
-          <Form.Item
-            label={
-              <div>
-                <FaGithub style={{ fontSize: "16px" }} /> GitHub
-              </div>
-            }
-            name="githubUsername"
-          >
-            <Input placeholder="username" />
-          </Form.Item>
-          <Form.Item
-            label={
-              <div>
-                <FaStackOverflow style={{ fontSize: "16px" }} /> Stack Overflow
-              </div>
-            }
-            name="stackoverflowUserId"
-          >
-            <Input placeholder="user id" />
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Try!
-            </Button>
-          </Form.Item>
-        </Form>
+        <SearchForm
+          githubUsername={githubUsername}
+          stackoverflowUserId={stackoverflowUserId}
+        />
         <List
           itemLayout="horizontal"
           dataSource={activityEvents}
@@ -184,6 +206,14 @@ function App() {
         />
       </Col>
     </Row>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Content />
+    </Router>
   );
 }
 

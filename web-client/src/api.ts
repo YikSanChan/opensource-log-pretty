@@ -124,7 +124,6 @@ function listGithubActivityEvents(username: string): Promise<ActivityEvent[]> {
       return handleJSONResponse(resp).then((data) => {
         const newEvents = data as GithubEvent[];
         const newFetchedEvents = [...fetchedEvents, ...newEvents];
-        console.log("count:" + newFetchedEvents.length);
 
         // Stop pagination if there is no next page
         // https://developer.github.com/v3/guides/traversing-with-pagination/#navigating-through-the-pages
