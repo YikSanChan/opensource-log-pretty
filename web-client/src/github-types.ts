@@ -1,7 +1,4 @@
-import { Endpoints } from "@octokit/types";
 import { ActivityEvent, What, Where, Who } from "./types";
-
-export type ListUserPublicEventsParameters = Endpoints["GET /users/:username/events/public"]["parameters"];
 
 // https://developer.github.com/v3/activity/events/types/
 type GithubActivityEventType =

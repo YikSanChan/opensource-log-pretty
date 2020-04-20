@@ -2,12 +2,7 @@ import {
   convertStackoverflowUserTimeline,
   StackoverflowUserTimeline,
 } from "./stackoverflow-types";
-import {
-  convertGithubEvent,
-  GithubEvent,
-  ListUserPublicEventsParameters,
-} from "./github-types";
-import { Octokit } from "@octokit/rest";
+import { convertGithubEvent, GithubEvent } from "./github-types";
 import { ActivityEvent } from "./types";
 
 // Copy from https://css-tricks.com/using-fetch/
@@ -32,6 +27,7 @@ function handleJSONResponse(response: Response) {
 }
 
 const STACKEXCHANGE_DOMAIN = "https://api.stackexchange.com/2.2";
+const GITHUB_DOMAIN = "https://api.github.com";
 
 // Max according to my experiment.
 // https://developer.github.com/v3/activity/events/ says events API doesn't support per_page, but that's not true
@@ -39,8 +35,6 @@ const GITHUB_PAGESIZE = 100;
 
 // Max according to https://api.stackexchange.com/docs/paging
 const STACKEXCHANGE_PAGESIZE = 100;
-
-const octokit = new Octokit();
 
 export function listActivityEvents(
   stackoverflowUserId?: string,
@@ -100,36 +94,48 @@ function listStackoverflowActivityEvents(
   );
 }
 
+// According to https://developer.github.com/v3/guides/traversing-with-pagination/#basics-of-pagination
+// Always rely on these link relations provided to you. Don't try to guess or construct your own URL.
 function listGithubActivityEvents(username: string): Promise<ActivityEvent[]> {
+  function extractNextURLFromGithubLink(link: string): string | undefined {
+    // an example: <https://api.github.com/user/17229109/events/public?page=2&per_page=100>; rel="next", <https://api.github.com/user/17229109/events/public?page=2&per_page=100>; rel="last"
+    const rels = link.split(", ");
+    let nextURL;
+    rels.forEach((rel) => {
+      const parts = rel.split("; ");
+      const urlPart = parts[0];
+      const relPart = parts[1];
+      if (relPart === `rel="next"`) {
+        nextURL = urlPart.substring(1, urlPart.length - 1);
+      }
+    });
+    return nextURL;
+  }
+
+  // TODO: fix username=touchdown render-nothing bug
   function listGithubActivityEventsRecursively(
     fetchedEvents: GithubEvent[],
-    page: number,
-    username: string
+    url: string
   ): Promise<GithubEvent[]> {
-    const params: ListUserPublicEventsParameters = {
-      username,
-      page,
-      per_page: GITHUB_PAGESIZE,
-    };
-    return octokit.activity.listPublicEventsForUser(params).then((resp) => {
-      const newEvents = resp.data as GithubEvent[];
-      if (newEvents.length === 0) {
-        return fetchedEvents;
-      }
-      const newFetchedEvents = [...fetchedEvents, ...newEvents];
-      return listGithubActivityEventsRecursively(
-        newFetchedEvents,
-        page + 1,
-        username
-      );
+    return fetch(url).then((resp) => {
+      const link = resp.headers.get("link");
+      const nextURL =
+        link === null ? undefined : extractNextURLFromGithubLink(link);
+      return handleJSONResponse(resp).then((data) => {
+        const newEvents = data as GithubEvent[];
+        const newFetchedEvents = [...fetchedEvents, ...newEvents];
+        console.log("count:" + newFetchedEvents.length);
+
+        // Stop pagination if there is no next page
+        // https://developer.github.com/v3/guides/traversing-with-pagination/#navigating-through-the-pages
+        if (nextURL === undefined) return newFetchedEvents;
+        return listGithubActivityEventsRecursively(newFetchedEvents, nextURL);
+      });
     });
   }
 
-  return listGithubActivityEventsRecursively(
-    [],
-    1,
-    username
-  ).then((githubEvents) =>
+  const url = `${GITHUB_DOMAIN}/users/${username}/events/public?page=1&per_page=${GITHUB_PAGESIZE}`;
+  return listGithubActivityEventsRecursively([], url).then((githubEvents) =>
     githubEvents
       .map((githubEvent) => convertGithubEvent(githubEvent))
       .filter((event) => event.what.do !== "unrecognized")
