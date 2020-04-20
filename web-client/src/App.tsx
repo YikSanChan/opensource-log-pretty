@@ -28,10 +28,6 @@ function formatDate(date: Date): string {
   return date.toLocaleString("en", options);
 }
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
-
 function convertNullableToUndefinable(nullable: string | null) {
   return nullable === null ? undefined : nullable;
 }
@@ -177,7 +173,7 @@ function SearchForm(props: SearchFormProps) {
 }
 
 function Content() {
-  const query = useQuery();
+  const query = new URLSearchParams(useLocation().search);
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
 
   const stackoverflowUserId = convertNullableToUndefinable(
